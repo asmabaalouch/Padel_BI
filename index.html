@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Padel With Us — ML Analytics</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f5fb;color:#1e2d3d;min-height:100vh}
+
+/* ── PALETTE ── */
+:root{
+  --b50:#e8f1fc;--b100:#c8ddf8;--b200:#95c1f0;--b300:#5da4e8;
+  --b500:#2d7fd4;--b600:#1f6ab8;--b700:#185298;--b900:#0c2d56;
+  --g50:#e4f3ec;--g100:#b5dfc8;--g200:#79c49d;--g300:#46aa75;
+  --g500:#2a8f5a;--g700:#1a6040;--g900:#0c3322;
+  --t50:#e8f7f5;--t300:#4dbdb0;--t500:#1a9b8c;
+  --p50:#f0ebff;--p300:#9b72e8;--p500:#7048d0;
+  --a50:#fff8e6;--a300:#f0b429;--a500:#d4900f;
+  --r50:#fef0f0;--r300:#f07575;--r500:#d43f3f;
+  --gray50:#f7f9fc;--gray100:#eaedf2;--gray200:#d3d8e0;
+  --gray400:#8a97a6;--gray600:#4f5e6e;--gray800:#2a3645;
+  --white:#ffffff;
+  --sh1:0 1px 4px rgba(0,0,0,.06);
+  --sh2:0 4px 16px rgba(0,0,0,.1);
+  --sh3:0 8px 32px rgba(0,0,0,.12);
+  --r6:6px;--r10:10px;--r14:14px;--r20:20px;
+}
+
+/* ── SIDEBAR ── */
+#sb{position:fixed;top:0;left:0;height:100vh;width:232px;
+  background:linear-gradient(175deg,var(--b900) 0%,#0a3828 100%);
+  display:flex;flex-direction:column;z-index:200;
+  box-shadow:3px 0 20px rgba(0,0,0,.25);transition:width .22s ease}
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.09);
+  display:flex;align-items:center;gap:10px;text-decoration:none}
+.sb-logo-icon{font-size:1.8rem;line-height:1;flex-shrink:0}
+.sb-logo-text{color:#fff}
+.sb-logo-title{font-size:.95rem;font-weight:700;letter-spacing:.2px}
+.sb-logo-sub{font-size:.62rem;opacity:.5;margin-top:1px}
+nav{flex:1;padding:8px 0;overflow-y:auto;overflow-x:hidden}
+nav::-webkit-scrollbar{width:3px}
+nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+.nav-group{padding:12px 16px 3px;font-size:.6rem;text-transform:uppercase;
+  letter-spacing:1.4px;color:rgba(255,255,255,.3);font-weight:700;white-space:nowrap}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 16px;width:100%;
+  border:none;background:none;color:rgba(255,255,255,.65);cursor:pointer;
+  text-align:left;font-size:.8rem;transition:all .15s;
+  border-left:3px solid transparent;white-space:nowrap;border-radius:0 8px 8px 0;margin:1px 6px 1px 0}
+.nav-btn:hover{background:rgba(255,255,255,.09);color:#fff}
+.nav-btn.active{background:rgba(255,255,255,.14);color:#fff;
+  border-left-color:var(--g300);font-weight:600}
+.nav-ic{width:20px;text-align:center;font-size:.95rem;flex-shrink:0}
+.nav-badge{margin-left:auto;background:rgba(255,255,255,.15);color:rgba(255,255,255,.8);
+  padding:1px 7px;border-radius:10px;font-size:.58rem;font-weight:700}
+.sb-foot{padding:14px 16px;border-top:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;gap:8px;font-size:.68rem;color:rgba(255,255,255,.4)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;
+  box-shadow:0 0 8px #4ade80;animation:pu 2s infinite;flex-shrink:0}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── MAIN ── */
+#main{margin-left:232px;min-height:100vh;transition:margin-left .22s ease}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--white);border-bottom:1.5px solid var(--gray100);
+  padding:13px 28px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;box-shadow:var(--sh1)}
+.tb-left .pg-title{font-size:1rem;font-weight:700;color:var(--b900)}
+.tb-left .pg-sub{font-size:.7rem;color:var(--gray400);margin-top:2px}
+.tb-right{display:flex;align-items:center;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;
+  padding:4px 12px;border-radius:20px;font-size:.68rem;font-weight:600;border:1px solid}
+.chip.green{background:var(--g50);color:var(--g700);border-color:var(--g100)}
+.chip.blue{background:var(--b50);color:var(--b700);border-color:var(--b100)}
+.chip.orange{background:var(--a50);color:#9a6500;border-color:#f5d98a}
+.chip .dot2{width:6px;height:6px;border-radius:50%;background:currentColor}
+.btn-reload{background:var(--b500);color:#fff;border:none;border-radius:var(--r6);
+  padding:7px 16px;font-size:.76rem;cursor:pointer;font-weight:600;
+  display:flex;align-items:center;gap:6px;transition:all .15s}
+.btn-reload:hover{background:var(--b700);transform:translateY(-1px)}
+.btn-reload:active{transform:none}
+
+/* ── SECTIONS ── */
+.sec{display:none;padding:24px 28px 40px;animation:fi .2s ease}
+.sec.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── SECTION HEADER ── */
+.sh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.sh-left{}
+.sh-tag{display:inline-flex;align-items:center;gap:6px;font-size:.62rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;color:var(--b500);margin-bottom:6px}
+.sh-tag::before{content:'';width:14px;height:3px;border-radius:2px;
+  background:linear-gradient(90deg,var(--b300),var(--g300))}
+.sh-title{font-size:1.15rem;font-weight:700;color:var(--b900)}
+.sh-desc{font-size:.76rem;color:var(--gray400);margin-top:3px;max-width:600px}
+
+/* ── KPI CARDS ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:20px}
+.kc{background:var(--white);border-radius:var(--r14);padding:16px 18px;
+  border:1px solid var(--gray100);box-shadow:var(--sh1);position:relative;overflow:hidden;
+  transition:box-shadow .15s,transform .15s;cursor:default}
+.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r14) var(--r14) 0 0}
+.kc:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+.kc.b::before{background:linear-gradient(90deg,var(--b200),var(--b400,#3d9ae8))}
+.kc.g::before{background:linear-gradient(90deg,var(--g200),var(--g400,#3fba7d))}
+.kc.a::before{background:linear-gradient(90deg,var(--a300),#f0c040)}
+.kc.r::before{background:linear-gradient(90deg,var(--r300),#f09090)}
+.kc.p::before{background:linear-gradient(90deg,var(--p300),#c090f0)}
+.kc.t::before{background:linear-gradient(90deg,var(--t300),#70d0c8)}
+.kc-icon{font-size:1.4rem;margin-bottom:8px}
+.kc-label{font-size:.62rem;color:var(--gray400);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.kc-val{font-size:1.5rem;font-weight:800;color:var(--b900);line-height:1}
+.kc-sub{font-size:.65rem;color:var(--gray400);margin-top:4px}
+.kc-trend{position:absolute;top:14px;right:14px;font-size:.65rem;font-weight:700;
+  padding:2px 7px;border-radius:10px}
+.kc-trend.up{background:#dcfce7;color:#166534}
+.kc-trend.down{background:#fee2e2;color:#991b1b}
+.kc-trend.neu{background:var(--gray100);color:var(--gray600)}
+
+/* ── CARD ── */
+.card{background:var(--white);border-radius:var(--r14);border:1px solid var(--gray100);
+  box-shadow:var(--sh1);padding:20px;transition:box-shadow .15s}
+.card:hover{box-shadow:var(--sh2)}
+.card-head{margin-bottom:14px}
+.ct{font-size:.84rem;font-weight:700;color:var(--b900);margin-bottom:2px}
+.cs{font-size:.68rem;color:var(--gray400)}
+.card-foot{margin-top:12px;padding-top:10px;border-top:1px solid var(--gray100);
+  font-size:.67rem;color:var(--gray400);display:flex;align-items:center;gap:6px}
+
+/* ── GRIDS ── */
+.g1{display:grid;grid-template-columns:1fr;gap:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g-3-1{display:grid;grid-template-columns:3fr 1fr;gap:14px}
+.g-2-1{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.mt{margin-top:14px}
+
+/* ── CHARTS ── */
+.ch{position:relative}
+.ch.h180{height:180px}.ch.h220{height:220px}.ch.h260{height:260px}
+.ch.h300{height:300px}.ch.h340{height:340px}.ch.h380{height:380px}
+
+/* ── TABLES ── */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.tbl thead th{background:var(--b50);color:var(--b900);padding:9px 12px;
+  text-align:left;font-weight:700;border-bottom:2px solid var(--b100);white-space:nowrap}
+.tbl tbody td{padding:8px 12px;border-bottom:1px solid var(--gray100);color:var(--gray600)}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:var(--g50);color:var(--gray800)}
+.tbl .best{font-weight:700;color:var(--b700)}
+.tbl .star{color:var(--a500);margin-left:4px}
+
+/* ── BADGES ── */
+.bm{display:inline-flex;align-items:center;padding:2px 10px;border-radius:12px;
+  font-size:.68rem;font-weight:700;white-space:nowrap}
+.bm.b{background:var(--b50);color:var(--b700)}
+.bm.g{background:var(--g50);color:var(--g700)}
+.bm.a{background:var(--a50);color:#8a6200}
+.bm.r{background:var(--r50);color:#9b2020}
+.bm.p{background:var(--p50);color:var(--p500)}
+.bm.t{background:var(--t50);color:var(--t500)}
+.bm.gray{background:var(--gray100);color:var(--gray600)}
+
+/* ── CONFUSION MATRIX ── */
+.cm-grid{display:grid;grid-template-columns:90px 1fr 1fr;gap:5px;
+  align-items:center;font-size:.7rem;margin:12px auto 0;max-width:320px}
+.cm-head{text-align:center;color:var(--gray400);font-weight:600;padding:3px}
+.cm-side{color:var(--gray400);text-align:right;padding-right:8px;font-size:.67rem}
+.cm-cell{border-radius:var(--r10);padding:12px 6px;text-align:center;
+  font-weight:700;font-size:.95rem}
+.cm-cell sub{font-weight:400;font-size:.62rem;color:var(--gray400);display:block;margin-top:2px}
+
+/* ── LEGEND ── */
+.leg{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:.7rem;color:var(--gray600)}
+.ld{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
+
+/* ── PLAYER CARDS ── */
+.player-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.player-card{background:var(--white);border-radius:var(--r14);border:1px solid var(--gray100);
+  padding:16px;text-align:center;box-shadow:var(--sh1);transition:all .15s}
+.player-card:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+.pc-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:1.3rem;font-weight:800;margin:0 auto 10px;color:#fff}
+.pc-name{font-size:.8rem;font-weight:700;color:var(--b900);margin-bottom:6px}
+.pc-row{display:flex;justify-content:space-between;font-size:.67rem;
+  color:var(--gray400);padding:2px 0;border-bottom:1px solid var(--gray100)}
+.pc-row:last-child{border-bottom:none}
+.pc-row span:last-child{font-weight:700;color:var(--gray800)}
+
+/* ── CLUSTER PROFILE CARDS ── */
+.cp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.cp-card{background:var(--white);border-radius:var(--r14);border:1px solid var(--gray100);
+  padding:16px;box-shadow:var(--sh1)}
+.cp-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.cp-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.cp-name{font-size:.78rem;font-weight:700;color:var(--b900)}
+.cp-n{font-size:.65rem;color:var(--gray400)}
+.cp-stat{display:flex;justify-content:space-between;font-size:.7rem;
+  padding:3px 0;border-bottom:1px solid var(--gray100);color:var(--gray600)}
+.cp-stat:last-child{border-bottom:none}
+.cp-stat strong{color:var(--gray800);font-weight:700}
+
+/* ── FORECAST CARD ── */
+.fc-player{background:var(--white);border-radius:var(--r14);border:1px solid var(--gray100);
+  padding:18px;box-shadow:var(--sh1)}
+.fc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.fc-title{font-size:.82rem;font-weight:700;color:var(--b900)}
+.fc-badge{font-size:.65rem;font-weight:700;padding:2px 9px;border-radius:10px;
+  background:var(--g50);color:var(--g700)}
+
+/* ── SPIN / ERROR ── */
+.spin-wrap{display:flex;align-items:center;justify-content:center;
+  height:180px;gap:10px;color:var(--gray400);font-size:.8rem}
+.spin{width:22px;height:22px;border:2.5px solid var(--b100);
+  border-top-color:var(--b500);border-radius:50%;animation:sp .75s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.err{background:#fff5f5;border:1px solid #fecaca;border-radius:var(--r10);
+  padding:14px;color:#991b1b;font-size:.76rem;line-height:1.5}
+
+/* ── DIVIDER ── */
+.divider{border:none;border-top:1px solid var(--gray100);margin:18px 0}
+
+/* ── COMPARISON TABLE SPECIAL ── */
+.cmp-winner{background:linear-gradient(90deg,var(--g50),transparent);
+  border-left:3px solid var(--g300)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){
+  #sb{width:56px}.sb-logo-text,.nav-btn span:not(.nav-ic),.nav-badge,.nav-group{display:none}
+  #main{margin-left:56px}
+  .g2,.g3,.g-3-1,.g-2-1,.player-grid,.cp-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside id="sb">
+  <a class="sb-logo" href="#">
+    <div class="sb-logo-icon">🎾</div>
+    <div class="sb-logo-text">
+      <div class="sb-logo-title">Padel With Us</div>
+      <div class="sb-logo-sub">ML Analytics Dashboard</div>
+    </div>
+  </a>
+  <nav>
+    <div class="nav-group">Analytics</div>
+    <button class="nav-btn active" onclick="nav(this,'overview')">
+      <span class="nav-ic">🏠</span><span>Overview</span></button>
+
+    <div class="nav-group">Section C — Classification</div>
+    <button class="nav-btn" onclick="nav(this,'clf')">
+      <span class="nav-ic">🏷️</span><span>Modèles &amp; Métriques</span></button>
+    <button class="nav-btn" onclick="nav(this,'features')">
+      <span class="nav-ic">🔬</span><span>Feature Selection</span></button>
+
+    <div class="nav-group">Section D — Régression</div>
+    <button class="nav-btn" onclick="nav(this,'reg')">
+      <span class="nav-ic">📈</span><span>Modèles &amp; Métriques</span></button>
+
+    <div class="nav-group">Anomaly Detection</div>
+    <button class="nav-btn" onclick="nav(this,'anomaly')">
+      <span class="nav-ic">🔍</span><span>IF + DBSCAN Marketing</span></button>
+
+    <div class="nav-group">Section E — Clustering</div>
+    <button class="nav-btn" onclick="nav(this,'clustering')">
+      <span class="nav-ic">🔵</span><span>K-Means · DBSCAN · HC</span></button>
+
+    <div class="nav-group">Section F — Time Series</div>
+    <button class="nav-btn" onclick="nav(this,'timeseries')">
+      <span class="nav-ic">📅</span><span>ARIMA · Prophet · XGBoost</span></button>
+
+    <div class="nav-group">KPIs</div>
+    <button class="nav-btn" onclick="nav(this,'kpis')">
+      <span class="nav-ic">🎯</span><span>KPI Analysis</span></button>
+  </nav>
+  <div class="sb-foot"><div class="live-dot"></div><span>Live · MySQL</span></div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main id="main">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="pg-title" id="hdr-title">Dashboard Overview</div>
+      <div class="pg-sub" id="hdr-sub">Padel With Us · 4 players · 2022–2025 · MySQL</div>
+    </div>
+    <div class="tb-right">
+      <span class="chip green"><span class="dot2"></span>Live Data</span>
+      <span class="chip blue" id="src-chip">MySQL</span>
+      <span class="chip orange">480 records</span>
+      <button class="btn-reload" onclick="reloadAll()">↺ Refresh</button>
+    </div>
+  </div>
+
+  <!-- ── OVERVIEW ── -->
+  <div class="sec active" id="s-overview">
+    <div class="sh"><div class="sh-left">
+      <div class="sh-tag">Overview</div>
+      <div class="sh-title">Performance Dashboard</div>
+      <div class="sh-desc">4 players · 2022–2025 · 480 records — Classification, Regression, Clustering &amp; Time Series</div>
+    </div></div>
+
+    <div id="ov-kpis" class="kpi-row">
+      <div class="spin-wrap"><div class="spin"></div>Loading from database…</div>
+    </div>
+
+    <div class="player-grid" id="player-cards">
+      <div class="spin-wrap"><div class="spin"></div></div>
+    </div>
+
+    <div class="g3 mt">
+      <div class="card"><div class="card-head"><div class="ct">Tier Distribution</div>
+        <div class="cs">Players per tier category</div></div>
+        <div class="ch h220"><canvas id="ch-tier"></canvas></div></div>
+      <div class="card"><div class="card-head"><div class="ct">High vs Low Value Players</div>
+        <div class="cs">IPJ Score binary classification balance</div></div>
+        <div class="ch h220"><canvas id="ch-hvp"></canvas></div></div>
+      <div class="card"><div class="card-head"><div class="ct">KPI vs Targets</div>
+        <div class="cs">Actual averages vs KPI thresholds</div></div>
+        <div class="ch h220"><canvas id="ch-kpi-vs-target"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ── CLASSIFICATION ── -->
+  <div class="sec" id="s-clf">
+    <div class="sh"><div class="sh-left">
+      <div class="sh-tag">Section C — Classification</div>
+      <div class="sh-title">High Value Player Prediction</div>
+      <div class="sh-desc">Logistic Regression vs Random Forest · Target: IPJ Score ≥ median · Train 80% / Test 20% · StratifiedKFold(5)</div>
+    </div></div>
+
+    <div class="g2">
+      <div class="card"><div class="card-head"><div class="ct">Model Comparison</div>
+        <div class="cs">Accuracy · Precision · Recall · F1 · ROC-AUC</div></div>
+        <div id="clf-tbl"><div class="spin-wrap"><div class="spin"></div></div></div>
+        <div class="card-foot">★ Best model highlighted · Labels: Standard (0) / High Value (1)</div>
+      </div>
+      <div class="card"><div class="card-head"><div class="ct">ROC Curves</div>
+        <div class="cs">True Positive Rate vs False Positive Rate — both models</div></div>
+        <div class="ch h260"><canvas id="ch-roc"></canvas></div></div>
+    </div>
+
+    <div class="g2 mt">
+      <div class="card"><div class="card-head"><div class="ct">Confusion Matrix — Logistic Regression</div>
+        <div class="cs">Predicted vs Actual</div></div>
+        <div id="cm-lr"><div class="spin-wrap"><div class="spin"></div></div></div></div>
+      <div class="card"><div class="card-head"><div class="ct">Confusion Matrix — Random Forest</div>
+        <div class="cs">Predicted vs Actual</div></div>
+        <div id="cm-rf"><div class="spin-wrap"><div class="spin"></div></div></div></div>
+    </div>
+
+    <div class="card mt"><div class="card-head"><div class="ct">Feature Importance — Random Forest Classifier</div>
+      <div class="cs">Top features driving High Value Player prediction (Random Forest embedded method)</div></div>
+      <div class="ch h300"><canvas id="ch-fi-clf"></canvas></div></div>
+  </div>
+
+  <!-- ── FEATURE SELECTION ── -->
+  <div class="sec" id="s-features">
+    <div class="sh"><div class="sh-left">
+      <div class="sh-tag">Section A — Feature Engineering</div>
+      <div class="sh-title">Feature Selection — 3 Methods</div>
+      <div class="sh-desc">Filter (ANOVA F-score) · Wrapper (RFE) · Embedded (Random Forest importance)</div>
+    </div></div>
+    <div class="g2">
+      <div class="card"><div class="card-head"><div class="ct">Feature Selection Comparison</div>
+        <div class="cs">Filter · Wrapper · Embedded — Verdict per feature</div></div>
+        <div id="fs-tbl"><div class="spin-wrap"><div class="spin"></div></div></div></div>
+      <div class="card"><div class="card-head"><div class="ct">ANOVA F-Scores (Filter Method)</div>
+        <div class="cs">Higher = more discriminative for classification</div></div>
+        <div class="ch h300"><canvas id="ch-filter"></canvas></div></div>
+    </div>
+    <div class="card mt"><div class="card-head"><div class="ct">Embedded Importance (Random Forest %)</div>
+      <div class="cs">Feature importance from the embedded method</div></div>
+      <div class="ch h260"><canvas id="ch-embedded"></canvas></div></div>
+  </div>
+
+  <!-- ── REGRESSION ── -->
+  <div class="sec" id="s-reg">
+    <div class="sh"><div class="sh-left">
+      <div class="sh-tag">Section D — Regression</div>
+      <div class="sh-title">IPJ Score Prediction</div>
+      <div class="sh-desc">Ridge Regression vs Random Forest Regressor · Target: log₁p(IPJ_score) · KFold(5) CV</div>
+    </div></div>
+
+    <div class="g2">
+      <div class="card"><div class="card-head"><div class="ct">Model Comparison</div>
+        <div class="cs">R² · RMSE · MAE (log scale + back-transformed IPJ)</div></div>
+        <div id="reg-tbl"><div class="spin-wrap"><div class="spin"></div></div></div>
+        <div class="card-foot">Target is log₁p transformed to reduce skewness · MAE shown in original IPJ units</div>
+      </div>
+      <div class="card"><div class="card-head"><div class="ct">Feature Importance — RF Regressor</div>
+        <div class="cs">Key predictors of IPJ score</div></div>
+        <div class="ch h260"><canvas id="ch-fi-reg"></canvas></div></div>
+    </div>
+
+    <div class="g2 mt">
+      <div class="card"><div class="card-head"><div class="ct">Actual vs Predicted — Ridge</div>
+        <div class="cs">Back-transformed from log scale</div></div>
+        <div class="ch h300"><canvas id="ch-avp-ridge"></canvas></div></div>
+      <div class="card"><div class="card-head"><div class="ct">Actual vs Predicted — Random Forest</div>
+        <div class="cs">Back-transformed from log scale</div></div>
+        <div class="ch h300"><canvas id="ch-avp-rf"></canvas></div></div>
+    </div>
+
+    <div class="g2 mt">
+      <div class="card"><div class="card-head"><div class="ct">Residual Plot — Ridge</div>
+        <div class="cs">Residuals vs fitted (log scale) — zero line in red</div></div>
+        <div class="ch h260"><canvas id="ch-res-ridge"></canvas></div></div>
+      <div class="card"><div class="card-head"><div class="ct">Residual Plot — Random Forest</div>
+        <div class="cs">Residuals vs fitted (log scale)</div></div>
+        <div class="ch h260"><canvas id="ch-res-rf"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ── ANOMALY ── -->
+  <div class="sec" id="s-anomaly">
+    <div class="sh"><div class="sh-left">
+      <div class="sh-tag">Advanced — Anomaly Detection</div>
+      <div class="sh-title">Marketing Profile Anomalies</div>
+      <div class="sh-desc">Features: TEI · Likes · Abonnés Instagram · Isolation Forest (contamination=5%) + DBSCAN (eps=0.8)</div>
+    </div></div>
+
+    <div id="anom-kpis" class="kpi-row">
+      <div class="spin-wrap"><div class="spin"></div></div>
+    </div>
+
+    <div class="g2">
+      <div class="card"><div class="card-head"><div class="ct">Isolation Forest — PCA 2D</div>
+        <div class="cs">Normal vs anomaly detected by IF</div></div>
+        <div class="ch h300"><canvas id="ch-if-pca"></canvas></div>
+        <div class="leg">
+          <span><span class="ld" style="background:#2d7fd4"></span>Normal</span>
+          <span><span class="ld" style="background:#e05c5c"></span>IF Anomaly</span>
+        </div></div>
+      <div class="card"><div class="card-head"><div class="ct">IF Score Heatmap (PCA 2D)</div>
+        <div class="cs">Green = normal · Red = suspicious</div></div>
+        <div class="ch h300"><canvas id="ch-if-score"></canvas></div></div>
+    </div>
+    <div class="g2 mt">
+      <div class="card"><div class="card-head"><div class="ct">DBSCAN Clusters + Noise Points</div>
+        <div class="cs">PCA 2D · Noise (−1) = anomaly candidates</div></div>
+        <div class="ch h300"><canvas id="ch-dbscan-anom"></canvas></div>
+        <div id="dbscan-anom-leg" class="leg"></div></div>
+      <div class="card"><div class="card-head"><div class="ct">TEI Distribution — Normal vs Anomaly</div>
+        <div class="cs">Instagram Engagement Rate histogram comparison</div></div>
+        <div class="ch h300"><canvas id="ch-tei-hist"></canvas></div></div>
+    </div>
+    <div class="g2 mt">
+      <div class="card"><div class="card-head"><div class="ct">Confirmed Anomalies Profile</div>
+        <div class="cs">Mean comparison: IF + DBSCAN confirmed anomalies vs normal players</div></div>
+        <div id="anom-cmp"></div></div>
+      <div class="card"><div class="card-head"><div class="ct">Likes vs Followers Scatter</div>
+        <div class="cs">Confirmed anomalies highlighted with ★</div></div>
+        <div class="ch h260"><canvas id="ch-likes-sc"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ── CLUSTERING ── -->
+  <div class="sec" id="s-clustering">
+    <div class="sh"><div class="sh-left">
+      <div class="sh-tag">Section E — Clustering</div>
+      <div class="sh-title">Tournament &amp; Player Segmentation</div>
+      <div class="sh-desc">K-Means (K=4) · DBSCAN · Hierarchical Ward · Features: points, win_rate, prize_money, fill_rate, social_score…</div>
+    </div></div>
+
+    <div class="g2">
+      <div class="card"><div class="card-head"><div class="ct">Elbow Method + Silhouette Score</div>
+        <div class="cs">Optimal K selection — K=4 chosen</div></div>
+        <div class="ch h260"><canvas id="ch-elbow"></canvas></div></div>
+      <div class="card"><div class="card-head"><div class="ct">Clustering Model Comparison</div>
+        <div class="cs">Silhouette Score ↑ · Davies-Bouldin ↓</div></div>
+        <div id="cl-cmp-tbl"><div class="spin-wrap"><div class="spin"></div></div></div></div>
+    </div>
+
+    <div class="card mt"><div class="card-head"><div class="ct">K-Means PCA 2D — Cluster Visualization</div>
+      <div class="cs">PCA explains variance · colored by cluster · ★ = centroids</div></div>
+      <div class="ch h340"><canvas id="ch-kmeans-pca"></canvas></div></div>
+
+    <div id="cp-cards" class="cp-grid mt"></div>
+
+    <div class="g2 mt">
+      <div class="card"><div class="card-head"><div class="ct">DBSCAN — PCA 2D</div>
+        <div class="cs">Density-based · Noise points = potential outliers</div></div>
+        <div class="ch h300"><canvas id="ch-dbscan-cl"></canvas></div></div>
+      <div class="card"><div class="card-head"><div class="ct">Player Dendogram (Hierarchical)</div>
+        <div class="cs">Ward linkage · 4 players similarity</div></div>
+        <div class="ch h300"><canvas id="ch-dendro"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ── TIME SERIES ── -->
+  <div class="sec" id="s-timeseries">
+    <div class="sh"><div class="sh-left">
+      <div class="sh-tag">Section F — Time Series Forecasting</div>
+      <div class="sh-title">Points Evolution &amp; Forecast 2026–2027</div>
+      <div class="sh-desc">Linear Trend (ARIMA surrogate) + XGBoost TS with lag features · 4 players · 2022–2025 data</div>
+    </div></div>
+
+    <div class="card">
+      <div class="card-head"><div class="ct">Historical Points per Player (2022–2025)</div>
+        <div class="cs">Annual total FIP points — all 4 players</div></div>
+      <div class="ch h300"><canvas id="ch-ts-history"></canvas></div>
+    </div>
+
+    <div class="g2 mt">
+      <div class="card"><div class="card-head"><div class="ct">Stationarity Analysis</div>
+        <div class="cs">Variance original vs differenced — ADF proxy</div></div>
+        <div id="sta-tbl"><div class="spin-wrap"><div class="spin"></div></div></div></div>
+      <div class="card"><div class="card-head"><div class="ct">Model Comparison (All Players)</div>
+        <div class="cs">Linear Trend · XGBoost TS · MAE · MAPE · R²</div></div>
+        <div id="ts-cmp-tbl"><div class="spin-wrap"><div class="spin"></div></div></div></div>
+    </div>
+
+    <div class="g2 mt" id="forecast-grid"></div>
+
+    <div class="g2 mt">
+      <div class="card"><div class="card-head"><div class="ct">XGBoost TS — Actual vs Predicted (2025)</div>
+        <div class="cs">Lag features: pts_lag1, pts_lag2, win_rate_lag1, avg_rank</div></div>
+        <div class="ch h260"><canvas id="ch-xgb-avp"></canvas></div></div>
+      <div class="card"><div class="card-head"><div class="ct">XGBoost Feature Importance</div>
+        <div class="cs">Which lag features matter most</div></div>
+        <div class="ch h260"><canvas id="ch-xgb-fi"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ── KPIs ── -->
+  <div class="sec" id="s-kpis">
+    <div class="sh"><div class="sh-left">
+      <div class="sh-tag">KPI Analysis</div>
+      <div class="sh-title">Performance Indicators</div>
+      <div class="sh-desc">TVJ · TEI · TRT · RPCO · CMMJ · IPJ Score — distributions &amp; tier breakdown</div>
+    </div></div>
+    <div class="g2">
+      <div class="card"><div class="card-head"><div class="ct">TVJ — Win Rate</div>
+        <div class="cs">Taux de Victoire par Joueur · Target ≥60%</div></div>
+        <div class="ch h260"><canvas id="ch-tvj"></canvas></div></div>
+      <div class="card"><div class="card-head"><div class="ct">TRT — Tournament Fill Rate</div>
+        <div class="cs">Taux de Remplissage des Tournois · Target ≥85%</div></div>
+        <div class="ch h260"><canvas id="ch-trt"></canvas></div></div>
+    </div>
+    <div class="g2 mt">
+      <div class="card"><div class="card-head"><div class="ct">RPCO — Prize / Cost Ratio</div>
+        <div class="cs">Ratio Prize Money / Coûts Opérationnels · Target ≥30%</div></div>
+        <div class="ch h260"><canvas id="ch-rpco"></canvas></div></div>
+      <div class="card"><div class="card-head"><div class="ct">IPJ Score</div>
+        <div class="cs">Indice de Popularité des Joueurs · Target ≥70</div></div>
+        <div class="ch h260"><canvas id="ch-ipj"></canvas></div></div>
+    </div>
+    <div class="card mt"><div class="card-head"><div class="ct">KPI Averages by Tier</div>
+      <div class="cs">TVJ · TEI · TRT · RPCO · IPJ — Hors Top vs Top10</div></div>
+      <div class="ch h300"><canvas id="ch-tier-kpi"></canvas></div></div>
+  </div>
+
+</main>
+
+<script>
+const API = "http://localhost:5000/api";
+const TITLES = {
+  overview:"Dashboard Overview",
+  clf:"Section C — Classification",
+  features:"Section A — Feature Selection",
+  reg:"Section D — Regression",
+  anomaly:"Anomaly Detection — Marketing",
+  clustering:"Section E — Clustering",
+  timeseries:"Section F — Time Series",
+  kpis:"KPI Analysis"
+};
+
+// ── Color system ──
+const B=["#c8ddf8","#6aaae6","#2d7fd4","#185298","#0c2d56"];
+const G=["#b5dfc8","#46aa75","#2a8f5a","#1a6040","#0c3322"];
+const PAL=["#2d7fd4","#2a8f5a","#f0b429","#e05c5c","#7048d0","#1a9b8c","#d4900f","#c840a0"];
+const CL_COLORS=["#2d7fd4","#2a8f5a","#f0b429","#7048d0"];
+const P_COLORS=["#2d7fd4","#2a8f5a","#f0b429","#7048d0"];
+
+function nav(btn,id){
+  document.querySelectorAll(".sec").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("s-"+id).classList.add("active");
+  btn.classList.add("active");
+  document.getElementById("hdr-title").textContent=TITLES[id]||id;
+}
+
+function reloadAll(){
+  Object.values(Chart.instances||{}).forEach(c=>{try{c.destroy()}catch(e){}});
+  document.getElementById("ov-kpis").innerHTML=spin("Reloading…");
+  init();
+}
+
+async function api(ep){
+  const r=await fetch(API+ep);
+  const d=await r.json();
+  if(!r.ok) throw new Error(d.error||`HTTP ${r.status}`);
+  return d;
+}
+function spin(m=""){return`<div class="spin-wrap"><div class="spin"></div>${m||"Loading…"}</div>`}
+function showErr(id,msg){
+  const el=typeof id==="string"?document.getElementById(id):id;
+  if(el) el.innerHTML=`<div class="err">⚠️ ${msg}</div>`;
+}
+
+function mkChart(id,type,data,opts={}){
+  const c=document.getElementById(id); if(!c)return null;
+  if(c._ch){try{c._ch.destroy()}catch(e){}}
+  return c._ch=new Chart(c,{type,data,
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{font:{size:11},boxWidth:11,padding:10}}},
+      ...opts}});
+}
+
+function hist(vals,bins=22){
+  const mn=Math.min(...vals),mx=Math.max(...vals),w=(mx-mn)/bins;
+  const labels=[],counts=Array(bins).fill(0);
+  for(let i=0;i<bins;i++) labels.push((mn+i*w).toFixed(1));
+  vals.forEach(v=>{const idx=Math.min(bins-1,Math.floor((v-mn)/(w||1)));counts[idx]++;});
+  return{labels,counts};
+}
+
+const GS={y:{grid:{color:"#eaecf0"}},x:{grid:{color:"#eaecf0"}}};
+
+// ── OVERVIEW ──────────────────────────────────
+async function loadOverview(){
+  try{
+    const d=await api("/overview");
+    document.getElementById("src-chip").textContent=d.source==="mysql"?"MySQL":"CSV";
+
+    document.getElementById("ov-kpis").innerHTML=`
+      <div class="kc b"><div class="kc-icon">📋</div>
+        <div class="kc-label">Total Records</div>
+        <div class="kc-val">${d.total_records}</div>
+        <div class="kc-sub">${d.source.toUpperCase()} · ${d.years[0]}–${d.years[d.years.length-1]}</div></div>
+      <div class="kc g"><div class="kc-icon">👤</div>
+        <div class="kc-label">Players</div>
+        <div class="kc-val">${d.total_players}</div>
+        <div class="kc-sub">IDs: ${d.player_profiles.map(p=>p.ID_player).join(' · ')}</div></div>
+      <div class="kc b"><div class="kc-icon">🏆</div>
+        <div class="kc-label">Avg TVJ (Win Rate)</div>
+        <div class="kc-val">${d.avg_TVJ}%</div>
+        <div class="kc-sub">Target ≥60%</div>
+        <div class="kc-trend ${d.avg_TVJ>=60?'up':'down'}">${d.avg_TVJ>=60?'▲ OK':'▼ Below'}</div></div>
+      <div class="kc g"><div class="kc-icon">📱</div>
+        <div class="kc-label">Avg TEI (Instagram)</div>
+        <div class="kc-val">${d.avg_TEI}%</div>
+        <div class="kc-sub">Target ≥3%</div>
+        <div class="kc-trend ${d.avg_TEI>=3?'up':'down'}">${d.avg_TEI>=3?'▲ OK':'▼ Below'}</div></div>
+      <div class="kc a"><div class="kc-icon">🎟️</div>
+        <div class="kc-label">Avg TRT (Fill Rate)</div>
+        <div class="kc-val">${d.avg_TRT}%</div>
+        <div class="kc-sub">Target ≥85%</div>
+        <div class="kc-trend ${d.avg_TRT>=85?'up':'down'}">${d.avg_TRT>=85?'▲ OK':'▼ Below'}</div></div>
+      <div class="kc p"><div class="kc-icon">⭐</div>
+        <div class="kc-label">High Value Players</div>
+        <div class="kc-val">${d.high_value_pct}%</div>
+        <div class="kc-sub">IPJ ≥ median</div>
+        <div class="kc-trend neu">50/50</div></div>
+    `;
+
+    // Player cards
+    const pColors=["#2d7fd4","#2a8f5a","#f0b429","#7048d0"];
+    document.getElementById("player-cards").innerHTML=d.player_profiles.map((p,i)=>`
+      <div class="player-card">
+        <div class="pc-avatar" style="background:${pColors[i%4]}">${p.ID_player}</div>
+        <div class="pc-name">Joueur ${p.ID_player}</div>
+        <div class="pc-row"><span>Points avg</span><span>${Math.round(p.points).toLocaleString()}</span></div>
+        <div class="pc-row"><span>Win Rate</span><span>${(p.win_rate*100).toFixed(1)}%</span></div>
+        <div class="pc-row"><span>World Rank</span><span>#${p.classement_mondial}</span></div>
+        <div class="pc-row"><span>Social Score</span><span>${p.social_score.toFixed(2)}</span></div>
+      </div>`).join("");
+
+    const tiers=Object.entries(d.tiers);
+    mkChart("ch-tier","doughnut",{
+      labels:tiers.map(t=>t[0]),
+      datasets:[{data:tiers.map(t=>t[1]),backgroundColor:[B[2],G[1]],
+        borderWidth:3,borderColor:"#fff",hoverOffset:6}]
+    },{cutout:"60%",plugins:{legend:{position:"bottom"}}});
+
+    mkChart("ch-hvp","bar",{
+      labels:["Low Value","High Value"],
+      datasets:[{data:[100-d.high_value_pct,d.high_value_pct],
+        backgroundColor:[B[1],G[1]],borderRadius:8,borderSkipped:false}]
+    },{plugins:{legend:{display:false}},scales:{...GS,y:{...GS.y,max:100,title:{display:true,text:"%"}}}});
+
+    mkChart("ch-kpi-vs-target","bar",{
+      labels:["TVJ","TEI","TRT"],
+      datasets:[
+        {label:"Actual",data:[d.avg_TVJ,d.avg_TEI,d.avg_TRT],
+          backgroundColor:[B[2],G[1],B[1]],borderRadius:6,borderSkipped:false},
+        {label:"Target",data:[60,3,85],
+          backgroundColor:["rgba(200,200,200,.4)"],borderRadius:6,
+          borderDash:[4,3],borderColor:"#ccc",borderWidth:1,type:"bar"}
+      ]
+    },{scales:{...GS}});
+  }catch(e){showErr("ov-kpis","API error: "+e.message);}
+}
+
+// ── CLASSIFICATION ────────────────────────────
+async function loadClassification(){
+  try{
+    const[met,roc,conf,fi]=await Promise.all([
+      api("/classification/metrics"),api("/classification/roc"),
+      api("/classification/confusion"),api("/classification/feature_importance")
+    ]);
+    const bestAuc=Math.max(...met.map(m=>m.auc));
+
+    document.getElementById("clf-tbl").innerHTML=`
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>ROC-AUC</th></tr></thead>
+        <tbody>${met.map((m,i)=>`<tr class="${m.auc===bestAuc?"cmp-winner":""}">
+          <td><span class="bm ${i===0?"b":"g"}">${m.model}</span></td>
+          <td class="${m.auc===bestAuc?"best":""}">${(m.accuracy*100).toFixed(1)}%</td>
+          <td>${(m.precision*100).toFixed(1)}%</td>
+          <td>${(m.recall*100).toFixed(1)}%</td>
+          <td>${(m.f1*100).toFixed(1)}%</td>
+          <td class="${m.auc===bestAuc?"best":""}">${m.auc}${m.auc===bestAuc?'<span class="star">★</span>':""}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>`;
+
+    mkChart("ch-roc","line",{datasets:[
+      {label:"Random",data:[{x:0,y:0},{x:1,y:1}],borderColor:"#ccc",
+        borderDash:[5,4],borderWidth:1,pointRadius:0,fill:false},
+      ...roc.map((r,i)=>({label:`${r.model} (AUC=${r.auc})`,
+        data:r.fpr.map((f,j)=>({x:f,y:r.tpr[j]})),
+        borderColor:i===0?B[2]:G[1],borderWidth:2.5,
+        pointRadius:0,fill:false,tension:.15}))
+    ]},{scales:{
+      x:{type:"linear",min:0,max:1,title:{display:true,text:"False Positive Rate"},...GS.x},
+      y:{min:0,max:1,title:{display:true,text:"True Positive Rate"},...GS.y}}});
+
+    ["lr","rf"].forEach((k,i)=>{
+      const cm=conf[i].matrix,lb=conf[i].labels,tot=cm.flat().reduce((a,b)=>a+b,0);
+      document.getElementById(`cm-${k}`).innerHTML=`
+        <div class="cm-grid">
+          <div></div>
+          <div class="cm-head">Pred: ${lb[0]}</div>
+          <div class="cm-head">Pred: ${lb[1]}</div>
+          ${lb.map((l,r)=>`
+            <div class="cm-side">Act: ${l}</div>
+            ${cm[r].map((v,c)=>`
+              <div class="cm-cell" style="background:${r===c?(i===0?"#c8ddf8":"#b5dfc8"):"#fde8e8"}">
+                ${v}<sub>${(v/tot*100).toFixed(0)}%</sub>
+              </div>`).join("")}`).join("")}
+        </div>`;
+    });
+
+    mkChart("ch-fi-clf","bar",{
+      labels:fi.features,
+      datasets:[{label:"Importance",data:fi.values,
+        backgroundColor:fi.features.map((_,i)=>i%2===0?B[2]:G[1]),borderRadius:5}]
+    },{indexAxis:"y",plugins:{legend:{display:false}},
+       scales:{x:{beginAtZero:true,...GS.x},y:{...GS.y,grid:{display:false}}}});
+  }catch(e){showErr("clf-tbl","Error: "+e.message);}
+}
+
+// ── FEATURE SELECTION ─────────────────────────
+async function loadFeatureSelection(){
+  try{
+    const d=await api("/classification/feature_selection");
+    const verdictColor=v=>v==="3/3"?"g":v==="2/3"?"a":"r";
+
+    document.getElementById("fs-tbl").innerHTML=`
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Feature</th><th>Filter F-score</th><th>Wrapper Rank</th><th>Embedded %</th><th>Verdict</th></tr></thead>
+        <tbody>${d.map(r=>`<tr>
+          <td><strong>${r.feature}</strong></td>
+          <td>${r.filter_f>0?r.filter_f:"~0"}</td>
+          <td>Rang ${r.wrapper_rank}</td>
+          <td>${r.embedded_pct}%</td>
+          <td><span class="bm ${verdictColor(r.verdict)}">${r.verdict}</span></td>
+        </tr>`).join("")}</tbody>
+      </table></div>`;
+
+    const sorted=[...d].sort((a,b)=>b.filter_f-a.filter_f);
+    mkChart("ch-filter","bar",{
+      labels:sorted.map(r=>r.feature),
+      datasets:[{label:"ANOVA F-score",data:sorted.map(r=>r.filter_f),
+        backgroundColor:sorted.map(r=>r.filter_f>100?B[2]:r.filter_f>50?G[1]:PAL[2]),
+        borderRadius:5}]
+    },{indexAxis:"y",plugins:{legend:{display:false}},
+       scales:{x:{beginAtZero:true,...GS.x},y:{...GS.y,grid:{display:false}}}});
+
+    const sorted2=[...d].sort((a,b)=>b.embedded_pct-a.embedded_pct);
+    mkChart("ch-embedded","bar",{
+      labels:sorted2.map(r=>r.feature),
+      datasets:[{label:"Embedded %",data:sorted2.map(r=>r.embedded_pct),
+        backgroundColor:sorted2.map((_,i)=>i%2===0?B[2]:G[1]),borderRadius:5}]
+    },{plugins:{legend:{display:false}},
+       scales:{x:{beginAtZero:true,...GS.x},y:{...GS.y,grid:{display:false}}}});
+  }catch(e){showErr("fs-tbl","Error: "+e.message);}
+}
+
+// ── REGRESSION ────────────────────────────────
+async function loadRegression(){
+  try{
+    const[met,avp,res,fi]=await Promise.all([
+      api("/regression/metrics"),api("/regression/actual_vs_predicted"),
+      api("/regression/residuals"),api("/regression/feature_importance")
+    ]);
+    const bestR2=Math.max(...met.map(m=>m.r2));
+
+    document.getElementById("reg-tbl").innerHTML=`
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Model</th><th>R²</th><th>R² CV (±std)</th><th>RMSE log</th><th>MAE (IPJ)</th></tr></thead>
+        <tbody>${met.map((m,i)=>`<tr class="${m.r2===bestR2?"cmp-winner":""}">
+          <td><span class="bm ${i===0?"b":"g"}">${m.model}</span></td>
+          <td class="${m.r2===bestR2?"best":""}">${m.r2}${m.r2===bestR2?'<span class="star">★</span>':""}</td>
+          <td>${m.r2_cv_mean} <span style="color:var(--gray400)">±${m.r2_cv_std}</span></td>
+          <td>${m.rmse}</td><td>${m.mae_orig} pts</td>
+        </tr>`).join("")}</tbody>
+      </table></div>`;
+
+    avp.forEach((d,i)=>{
+      const id=i===0?"ch-avp-ridge":"ch-avp-rf";
+      const col=i===0?B[2]:G[1];
+      const mn=Math.min(...d.actual,...d.predicted),mx=Math.max(...d.actual,...d.predicted);
+      mkChart(id,"scatter",{datasets:[
+        {label:"Players",data:d.actual.map((a,j)=>({x:a,y:d.predicted[j]})),
+          backgroundColor:col+"99",pointRadius:5,pointHoverRadius:7},
+        {label:"Perfect fit",data:[{x:mn,y:mn},{x:mx,y:mx}],type:"line",
+          borderColor:"#aaa",borderDash:[5,4],borderWidth:1.5,pointRadius:0,fill:false}
+      ]},{scales:{
+        x:{title:{display:true,text:"Actual IPJ"},...GS.x},
+        y:{title:{display:true,text:"Predicted IPJ"},...GS.y}}});
+    });
+
+    res.forEach((d,i)=>{
+      const id=i===0?"ch-res-ridge":"ch-res-rf";
+      const col=i===0?B[2]:G[1];
+      const mn=Math.min(...d.predicted),mx=Math.max(...d.predicted);
+      mkChart(id,"scatter",{datasets:[
+        {label:"Residuals",data:d.predicted.map((p,j)=>({x:p,y:d.residuals[j]})),
+          backgroundColor:col+"88",pointRadius:4},
+        {label:"Zero line",data:[{x:mn,y:0},{x:mx,y:0}],type:"line",
+          borderColor:"#e05c5c",borderDash:[4,4],borderWidth:1.5,pointRadius:0,fill:false}
+      ]},{scales:{
+        x:{title:{display:true,text:"Fitted (log)"},...GS.x},
+        y:{title:{display:true,text:"Residuals"},...GS.y}}});
+    });
+
+    mkChart("ch-fi-reg","bar",{
+      labels:fi.features,
+      datasets:[{label:"Importance",data:fi.values,
+        backgroundColor:fi.features.map((_,i)=>i%2===0?G[1]:B[2]),borderRadius:5}]
+    },{indexAxis:"y",plugins:{legend:{display:false}},
+       scales:{x:{beginAtZero:true,...GS.x},y:{...GS.y,grid:{display:false}}}});
+  }catch(e){showErr("reg-tbl","Error: "+e.message);}
+}
+
+// ── ANOMALY ───────────────────────────────────
+async function loadAnomaly(){
+  try{
+    const d=await api("/anomaly");
+    document.getElementById("anom-kpis").innerHTML=`
+      <div class="kc g"><div class="kc-icon">✅</div>
+        <div class="kc-label">Normal Players</div><div class="kc-val">${d.normal_count}</div>
+        <div class="kc-sub">${((d.normal_count/(d.normal_count+d.anomaly_count))*100).toFixed(0)}% of dataset</div></div>
+      <div class="kc r"><div class="kc-icon">⚠️</div>
+        <div class="kc-label">Confirmed Anomalies</div><div class="kc-val">${d.anomaly_count}</div>
+        <div class="kc-sub">IF + DBSCAN both</div></div>
+      <div class="kc b"><div class="kc-icon">🔵</div>
+        <div class="kc-label">IF Only Flagged</div><div class="kc-val">${d.if_only_count}</div>
+        <div class="kc-sub">Isolation Forest only</div></div>
+      <div class="kc a"><div class="kc-icon">📐</div>
+        <div class="kc-label">PCA Variance</div>
+        <div class="kc-val">${((d.pca_variance[0]+d.pca_variance[1])*100).toFixed(0)}%</div>
+        <div class="kc-sub">Explained by 2 PCs</div></div>
+    `;
+    const pc1=`PC1 (${(d.pca_variance[0]*100).toFixed(0)}%)`;
+    const pc2=`PC2 (${(d.pca_variance[1]*100).toFixed(0)}%)`;
+
+    const norm=d.points.filter(p=>p.if_label===1),anom=d.points.filter(p=>p.if_label===-1);
+    mkChart("ch-if-pca","scatter",{datasets:[
+      {label:"Normal",data:norm.map(p=>({x:p.x,y:p.y})),backgroundColor:B[2]+"88",pointRadius:4},
+      {label:"IF Anomaly",data:anom.map(p=>({x:p.x,y:p.y})),
+        backgroundColor:"#e05c5c",pointRadius:7,pointStyle:"rectRot"}
+    ]},{scales:{x:{title:{display:true,text:pc1},...GS.x},y:{title:{display:true,text:pc2},...GS.y}}});
+
+    const scMin=Math.min(...d.points.map(p=>p.if_score)),scMax=Math.max(...d.points.map(p=>p.if_score));
+    const sc2col=s=>{const t=(s-scMin)/(scMax-scMin);
+      return`rgba(${Math.round(224-t*194)},${Math.round(92+t*62)},${Math.round(92-t*28)},0.75)`};
+    mkChart("ch-if-score","scatter",{datasets:[{label:"IF Score",
+      data:d.points.map(p=>({x:p.x,y:p.y})),
+      backgroundColor:d.points.map(p=>sc2col(p.if_score)),pointRadius:4}]
+    },{plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:pc1},...GS.x},y:{title:{display:true,text:pc2},...GS.y}}});
+
+    const clMap={};
+    d.points.forEach(p=>{const k=p.db_label;if(!clMap[k])clMap[k]=[];clMap[k].push({x:p.x,y:p.y});});
+    const DBSC_COLORS=["#2d7fd4","#2a8f5a","#f0b429","#7048d0","#1a9b8c","#d4900f"];
+    const dbDS=Object.entries(clMap).sort((a,b)=>+a[0]-+b[0]).map(([lbl,pts],i)=>({
+      label:lbl==="-1"?"Noise/Anomaly":`Cluster ${lbl}`,data:pts,
+      backgroundColor:lbl==="-1"?"#e05c5ccc":DBSC_COLORS[i%DBSC_COLORS.length]+"aa",
+      pointRadius:lbl==="-1"?7:4,pointStyle:lbl==="-1"?"rectRot":"circle"}));
+    mkChart("ch-dbscan-anom","scatter",{datasets:dbDS},{
+      scales:{x:{title:{display:true,text:pc1},...GS.x},y:{title:{display:true,text:pc2},...GS.y}}});
+
+    let legH="";
+    Object.entries(d.cluster_counts).forEach(([n,cnt],i)=>{
+      const col=n==="Anomalie"?"#e05c5c":DBSC_COLORS[i%DBSC_COLORS.length];
+      legH+=`<span><span class="ld" style="background:${col}"></span>${n}: ${cnt}</span>`;
+    });
+    document.getElementById("dbscan-anom-leg").innerHTML=legH;
+
+    const nh=hist(d.tei_normal,15),ah=hist(d.tei_anomaly,8);
+    mkChart("ch-tei-hist","bar",{labels:nh.labels,datasets:[
+      {label:`Normal (n=${d.normal_count})`,data:nh.counts,backgroundColor:G[1]+"cc",borderRadius:4},
+      {label:`Anomaly (n=${d.anomaly_count})`,data:[...ah.counts,...Array(Math.max(0,nh.labels.length-ah.labels.length)).fill(0)],
+        backgroundColor:"#e05c5ccc",borderRadius:4}
+    ]},{scales:{y:{beginAtZero:true,title:{display:true,text:"Count"},...GS.y},...GS}});
+
+    document.getElementById("anom-cmp").innerHTML=`
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>KPI</th><th>Anomalies avg</th><th>Normal avg</th><th>Écart %</th></tr></thead>
+        <tbody>${d.comparison.map(r=>`<tr>
+          <td><strong>${r.kpi}</strong></td>
+          <td>${r.anomaly.toLocaleString()}</td><td>${r.normal.toLocaleString()}</td>
+          <td style="color:${r.ecart>0?"#d43f3f":"#2a8f5a"};font-weight:700">
+            ${r.ecart>0?"+":""}${r.ecart}%</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+      <div style="font-size:.66rem;color:var(--gray400);margin-top:8px">
+        Tier: ${Object.entries(d.tier_dist).map(([t,n])=>`${t}: ${n}`).join(" · ")}
+      </div>`;
+
+    const normL=d.points.filter(p=>p.is_anomaly===0),anomL=d.points.filter(p=>p.is_anomaly===1);
+    mkChart("ch-likes-sc","scatter",{datasets:[
+      {label:"Normal",data:normL.map(p=>({x:p.followers,y:p.likes})),
+        backgroundColor:B[2]+"77",pointRadius:4},
+      {label:"Confirmed anomaly",data:anomL.map(p=>({x:p.followers,y:p.likes})),
+        backgroundColor:"#e05c5c",pointRadius:9,pointStyle:"star"}
+    ]},{scales:{x:{title:{display:true,text:"Followers"},...GS.x},
+               y:{title:{display:true,text:"Likes"},...GS.y}}});
+  }catch(e){showErr("anom-kpis","Error: "+e.message);}
+}
+
+// ── CLUSTERING ────────────────────────────────
+async function loadClustering(){
+  try{
+    const d=await api("/clustering/overview");
+    const kRange=Array.from({length:d.elbow.length},(_,i)=>i+2);
+
+    mkChart("ch-elbow","line",{labels:kRange,datasets:[
+      {label:"Inertia (WCSS)",data:d.elbow,borderColor:B[2],backgroundColor:B[0],
+        borderWidth:2.5,pointRadius:5,yAxisID:"y",tension:.2,fill:true},
+      {label:"Silhouette",data:d.silhouettes,borderColor:G[1],
+        borderWidth:2.5,pointRadius:5,yAxisID:"y2",tension:.2,borderDash:[5,4]}
+    ]},{scales:{
+      y:{title:{display:true,text:"Inertia"},...GS.y},
+      y2:{position:"right",title:{display:true,text:"Silhouette"},
+          grid:{drawOnChartArea:false},...GS.y},
+      x:{title:{display:true,text:"Number of clusters K"},...GS.x}},
+    plugins:{legend:{labels:{font:{size:11},boxWidth:10}},
+      annotation:{annotations:{kLine:{type:"line",xMin:d.K,xMax:d.K,
+        borderColor:"#e05c5c",borderWidth:2,borderDash:[4,3]}}}}});
+
+    document.getElementById("cl-cmp-tbl").innerHTML=`
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Model</th><th>Silhouette ↑</th><th>Davies-Bouldin ↓</th><th>N Clusters</th><th>Outliers</th></tr></thead>
+        <tbody>${d.comparison.map((r,i)=>{
+          const best=r.silhouette===Math.max(...d.comparison.filter(x=>x.silhouette).map(x=>x.silhouette));
+          return`<tr class="${best?"cmp-winner":""}">
+            <td><span class="bm ${["b","g","t"][i]||"gray"}">${r.model}</span></td>
+            <td class="${best?"best":""}">${r.silhouette??'N/A'}${best?'<span class="star">★</span>':""}</td>
+            <td>${r.davies_bouldin??'N/A'}</td>
+            <td>${r.n_clusters}</td>
+            <td>${r.outliers>0?`<span class="bm r">${r.outliers}</span>`:"—"}</td>
+          </tr>`;}).join("")}</tbody>
+      </table></div>
+      <div style="font-size:.66rem;color:var(--gray400);margin-top:8px">K=${d.K} · Silhouette=${d.sil_km} · Davies-Bouldin=${d.db_km}</div>`;
+
+    // K-Means PCA scatter
+    const km_ds=Array.from({length:d.K},(_,c)=>({
+      label:d.profiles[c]?.label||`Cluster ${c}`,
+      data:d.points.filter(p=>p.km===c).map(p=>({x:p.x,y:p.y})),
+      backgroundColor:CL_COLORS[c]+"aa",pointRadius:5,pointHoverRadius:7}));
+    km_ds.push({label:"Centroids",
+      data:d.centroids_2d.map(c=>({x:c.x,y:c.y})),
+      backgroundColor:"#1a1a2e",pointRadius:14,pointStyle:"star",pointHoverRadius:16});
+    mkChart("ch-kmeans-pca","scatter",{datasets:km_ds},{
+      scales:{x:{title:{display:true,text:`PC1 (${(d.pca_variance[0]*100).toFixed(0)}%)`},...GS.x},
+              y:{title:{display:true,text:`PC2 (${(d.pca_variance[1]*100).toFixed(0)}%)`},...GS.y}}});
+
+    // Cluster profile cards
+    document.getElementById("cp-cards").innerHTML=d.profiles.map((p,i)=>`
+      <div class="cp-card">
+        <div class="cp-header">
+          <div class="cp-dot" style="background:${CL_COLORS[i]}"></div>
+          <div><div class="cp-name">${p.label}</div>
+            <div class="cp-n">n = ${p.n} records</div></div>
+        </div>
+        <div class="cp-stat"><span>Win Rate</span><strong>${(p.win_rate*100).toFixed(1)}%</strong></div>
+        <div class="cp-stat"><span>Avg Points</span><strong>${p.points.toLocaleString()}</strong></div>
+        <div class="cp-stat"><span>World Rank</span><strong>#${p.rank}</strong></div>
+        <div class="cp-stat"><span>Social Score</span><strong>${p.social}</strong></div>
+        <div class="cp-stat"><span>Top10 %</span><strong>${p.tier_top10_pct}%</strong></div>
+      </div>`).join("");
+
+    // DBSCAN scatter
+    const db_clMap={};
+    d.points.forEach(p=>{const k=p.db;if(!db_clMap[k])db_clMap[k]=[];db_clMap[k].push({x:p.x,y:p.y});});
+    const dbDS2=Object.entries(db_clMap).sort((a,b)=>+a[0]-+b[0]).map(([lbl,pts],i)=>({
+      label:lbl==="-1"?"Noise (Outliers)":`Cluster ${lbl}`,data:pts,
+      backgroundColor:lbl==="-1"?"rgba(0,0,0,.5)":PAL[i%PAL.length]+"aa",
+      pointRadius:lbl==="-1"?5:4,pointStyle:lbl==="-1"?"cross":"circle"}));
+    mkChart("ch-dbscan-cl","scatter",{datasets:dbDS2},{
+      scales:{x:{title:{display:true,text:`PC1 (${(d.pca_variance[0]*100).toFixed(0)}%)`},...GS.x},
+              y:{title:{display:true,text:`PC2 (${(d.pca_variance[1]*100).toFixed(0)}%)`},...GS.y}}});
+
+    // Dendrogram proxy — merge heights bar chart
+    mkChart("ch-dendro","bar",{
+      labels:d.dend_heights.map((_,i)=>`Step ${i+1}`),
+      datasets:[{label:"Ward Merge Height",data:d.dend_heights,
+        backgroundColor:d.dend_heights.map((_,i)=>i===d.dend_heights.length-1?B[2]:G[1]),
+        borderRadius:4}]
+    },{plugins:{legend:{display:false}},
+       scales:{y:{title:{display:true,text:"Ward Distance"},...GS.y},...GS}});
+  }catch(e){showErr("cl-cmp-tbl","Error: "+e.message);}
+}
+
+// ── TIME SERIES ───────────────────────────────
+async function loadTimeSeries(){
+  try{
+    const d=await api("/timeseries/overview");
+
+    // History chart
+    mkChart("ch-ts-history","line",{
+      labels:d.years,
+      datasets:d.players.map((pid,i)=>({
+        label:`Joueur ${pid}`,
+        data:d.player_series[pid].total_points,
+        borderColor:P_COLORS[i],backgroundColor:P_COLORS[i]+"22",
+        borderWidth:2.5,pointRadius:5,fill:true,tension:.3}))
+    },{scales:{
+      y:{title:{display:true,text:"Total FIP Points"},...GS.y},
+      x:{title:{display:true,text:"Year"},...GS.x}}});
+
+    // Stationarity table
+    document.getElementById("sta-tbl").innerHTML=`
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Player</th><th>Var Original</th><th>Var Differenced</th><th>Stationary</th></tr></thead>
+        <tbody>${Object.entries(d.stationarity).map(([pid,s])=>`<tr>
+          <td><span class="bm b">Joueur ${pid}</span></td>
+          <td>${s.var_orig.toLocaleString()}</td>
+          <td>${s.var_diff.toLocaleString()}</td>
+          <td><span class="bm ${s.stationary?"g":"a"}">${s.stationary?"✓ Stationary":"~ Trend"}</span></td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+      <div style="font-size:.66rem;color:var(--gray400);margin-top:8px">
+        Stationarity proxy: Var(diff) &lt; Var(original) → trend series
+      </div>`;
+
+    // Forecast per player grids
+    const fg=document.getElementById("forecast-grid");
+    fg.innerHTML=d.forecast_chart.map((fc,i)=>`
+      <div class="fc-player">
+        <div class="fc-header">
+          <div class="fc-title" style="color:${P_COLORS[i]}">Joueur ${fc.player}</div>
+          <div class="fc-badge">
+            2026: ${(d.arima_results[fc.player]?.forecast_2026||0).toLocaleString()} pts
+          </div>
+        </div>
+        <div class="ch h220"><canvas id="ch-fc-${fc.player}"></canvas></div>
+      </div>`).join("");
+
+    // Render each player forecast chart
+    d.forecast_chart.forEach((fc,i)=>{
+      const allYears=fc.years;
+      const histLen=fc.actual.filter(v=>v!==null).length;
+      mkChart(`ch-fc-${fc.player}`,"line",{
+        labels:allYears,
+        datasets:[
+          {label:"Historical",data:fc.actual,borderColor:P_COLORS[i],
+            backgroundColor:P_COLORS[i]+"22",borderWidth:2,pointRadius:4,fill:true,tension:.3,
+            spanGaps:false},
+          {label:"Forecast",
+            data:[...Array(histLen-1).fill(null),fc.actual[histLen-1],...fc.forecast.filter(v=>v!==null)],
+            borderColor:PAL[2],backgroundColor:PAL[2]+"22",
+            borderWidth:2,borderDash:[6,4],pointRadius:5,fill:false,tension:.2}
+        ]
+      },{scales:{
+        y:{title:{display:true,text:"FIP Points"},...GS.y},
+        x:{...GS.x}},plugins:{legend:{labels:{font:{size:10},boxWidth:9}}}});
+    });
+
+    // Comparison table
+    const cmp=d.comparison;
+    document.getElementById("ts-cmp-tbl").innerHTML=`
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>Model</th><th>Player</th><th>MAE</th><th>MAPE %</th><th>R²</th></tr></thead>
+        <tbody>${cmp.map((r,i)=>`<tr>
+          <td><span class="bm ${["b","g","t"][i]||"gray"}">${r.model}</span></td>
+          <td>${r.player==="All"?"All players":`Joueur ${r.player}`}</td>
+          <td>${r.mae.toLocaleString()}</td>
+          <td>${r.mape}%</td>
+          <td>${r.r2}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+      <div style="font-size:.66rem;color:var(--gray400);margin-top:8px">
+        Linear Trend = ARIMA surrogate (statsmodels unavailable) · XGBoost TS = GradientBoosting with lag features
+      </div>`;
+
+    // XGBoost avp + fi
+    const xgb=d.xgb;
+    if(xgb.actual&&xgb.actual.length>0){
+      mkChart("ch-xgb-avp","bar",{
+        labels:xgb.players.map(p=>`Joueur ${p}`),
+        datasets:[
+          {label:"Actual",data:xgb.actual,backgroundColor:B[2],borderRadius:6,borderSkipped:false},
+          {label:"Predicted",data:xgb.predicted,backgroundColor:G[1],borderRadius:6,borderSkipped:false}
+        ]
+      },{scales:{y:{title:{display:true,text:"FIP Points"},...GS.y},...GS}});
+
+      const fi=xgb.feature_importance;
+      if(Object.keys(fi).length>0){
+        const sorted=Object.entries(fi).sort((a,b)=>b[1]-a[1]);
+        mkChart("ch-xgb-fi","bar",{
+          labels:sorted.map(e=>e[0]),
+          datasets:[{label:"Importance",data:sorted.map(e=>e[1]),
+            backgroundColor:sorted.map((_,i)=>i%2===0?B[2]:G[1]),borderRadius:5}]
+        },{indexAxis:"y",plugins:{legend:{display:false}},
+           scales:{x:{beginAtZero:true,...GS.x},y:{...GS.y,grid:{display:false}}}});
+      }
+    }
+  }catch(e){showErr("sta-tbl","Error: "+e.message);}
+}
+
+// ── KPIs ──────────────────────────────────────
+async function loadKPIs(){
+  try{
+    const[dist,byTier]=await Promise.all([api("/kpi/distribution"),api("/kpi/by_tier")]);
+    const mkH=(id,kpi,col,tgt)=>{
+      const h=hist(dist[kpi].values,22);
+      mkChart(id,"bar",{
+        labels:h.labels,
+        datasets:[{label:`${kpi} (μ=${dist[kpi].mean})`,data:h.counts,
+          backgroundColor:col+"cc",borderRadius:4}]
+      },{plugins:{legend:{display:false}},
+         scales:{x:{title:{display:true,text:kpi},...GS.x,grid:{display:false}},
+                 y:{beginAtZero:true,...GS.y}}});
+    };
+    mkH("ch-tvj","TVJ",B[2],60); mkH("ch-trt","TRT",G[1],85);
+    mkH("ch-rpco","RPCO",PAL[0],30); mkH("ch-ipj","IPJ_score",PAL[1],70);
+
+    const kpiCols=["TVJ","TEI","TRT","RPCO","IPJ_score"];
+    mkChart("ch-tier-kpi","bar",{
+      labels:byTier.map(r=>r.Tier),
+      datasets:kpiCols.map((k,i)=>({label:k,data:byTier.map(r=>r[k]),
+        backgroundColor:PAL[i]+"cc",borderRadius:5}))
+    },{scales:{...GS}});
+  }catch(e){showErr("s-kpis","Error: "+e.message);}
+}
+
+// ── INIT ──────────────────────────────────────
+function init(){
+  loadOverview();
+  loadClassification();
+  loadFeatureSelection();
+  loadRegression();
+  loadAnomaly();
+  loadClustering();
+  loadTimeSeries();
+  loadKPIs();
+}
+init();
+</script>
+</body>
+</html>
